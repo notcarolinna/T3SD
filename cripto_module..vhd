@@ -19,7 +19,7 @@ ENTITY cripto_module IS
     
     busy : OUT STD_LOGIC; -- Saída
     ready : OUT STD_LOGIC; -- Saída
-    data_o : OUT STD_LOGIC(63 DOWNTO 0); -- Saída
+    data_o : OUT STD_LOGIC(63 DOWNTO 0) -- Saída
     
     );
     
