@@ -49,6 +49,17 @@ ARCHITECTURE cripto_module OF cripto_module IS
            ( 1, 15, 13, 0, 5, 7, 10, 4, 9, 2, 3, 14, 6, 11, 8, 12));   
    
   SIGNAL key : STD_LOGIC_VECTOR(255 DOWNTO 0):= x"DEADBEEF89ABCDEF01234567DEADBEEFDEADBEEF89ABCDEF01234567DEADBEEF";
+  --- caso precise, e eu acho q vai já vou deixar aqui , n sei como faz pra atribiur a diferentes partes de um mesmo vetor diferentes valores.
+  SIGNAL key : STD_LOGIC_VECTOR(7 DOWNTO 0);
+         key[0] = 0xDEADBEEF;
+         key[1] = 0x01234567;
+         key[2] = 0x89ABCDEF;
+         key[3] = 0xDEADBEEF;
+         key[4] = 0xDEADBEEF;
+         key[5] = 0x01234567;
+         key[6] = 0x89ABCDEF;
+         key[7] = 0xDEADBEEF;
+ 
 
 
   -- clock -------------------------------
