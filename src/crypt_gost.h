@@ -38,8 +38,9 @@ void gost_round(uint32_t xi)
         * read from the s-box at each line and based on the
         * size of the total 16 columns of s-box (and thus % 16)
         */
-        uint8_t Ni = (CM1 >> (4 * (7 - j))) % 16;
-        Ni = s_box[j][Ni]; // substitution through s-blocks.
+        uint8_t Ni = (CM1 >> (4 * (7 - j))) % 16;  // extrai quatro bits consecutivos de CM1, começando pela posição mais significativa, 
+	    //para determinar qual linha da coluna atual da caixa S deve ser acessada. O valor resultante é armazenado na variável Ni.
+        Ni = s_box[j][Ni]; //realiza uma substituição usando a caixa S. Ela usa o valor Ni como um índice para acessar a tabela de substituição s_box e obter o valor correspondente. O resultado substitui o valor original de Ni.
 
         // place the read bits to correct position in the 32 bit output
         uint32_t mask = 0;
