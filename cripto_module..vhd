@@ -57,7 +57,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
    
   SIGNAL key : STD_LOGIC_VECTOR(255 DOWNTO 0):= x"DEADBEEF89ABCDEF01234567DEADBEEFDEADBEEF89ABCDEF01234567DEADBEEF";
   --- caso precise, e eu acho q vai já vou deixar aqui , n sei como faz pra atribiur a diferentes partes de um mesmo vetor diferentes valores.
-  SIGNAL key : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL key : STD_LOGIC_VECTOR(7 DOWNTO 0); --- seria assim q atribui os valores???? -----------------------
          key[0] = 0xDEADBEEF;
          key[1] = 0x01234567;
          key[2] = 0x89ABCDEF;
@@ -101,15 +101,18 @@ PROCESS(EA) -- aqui tem que colocar todos os sinais que a gente usar embaixo dps
         WHEN E2 =>
            ---- O QUE FAZ NA ENTRAEDA DE DADOS --------------
            ---- gravar os dados nas variáveis, telvez seja o n1, mas eu n tenho crtz
-            CM1 = (N1 + -- ver como passar a chave aqui ---) mod 4294967296; // 2^32 pra manter nos 32 bits, isso ta aqui pq ta fora do loop do gost round
+	   ----  isso ta aqui pq ta fora do loop do gost round
+            CM1 = (N1 + -- ver como passar a chave aqui ---) mod 4294967296; // 2^32 pra manter nos 32 bits,
             IF enc_edc = '1' | enc_dec = '0' THEN
                  EF <= E6;
             END IF
         WHEN E3 =>
             --------- O QUE FAZ  NA CRIPTOGRAFIA ---------
+	    ----parte do fim do gost round depois do loop
 
         WHEN E4 =>
            ----------  QUE  ACONTECE NA DECRIPTOGRAFIA C-------
+	   ----parte do fim do gost round depois do loop
 
         WHEN E5 =>
         ---------------  O QUE ACONTECE NA SAIDA DE DADOS ----------- 
@@ -126,15 +129,16 @@ PROCESS(EA) -- aqui tem que colocar todos os sinais que a gente usar embaixo dps
            mask = mask << (28 - (4 * cont_gost)); --a variável mask é deslocada para a esquerda 
            SN = SN | mask;  -- isso faz um ou entre os dois valores, como se fosse uma porta lógica? --------------------------------
            cont_gost <= cont_gost + 1; ---------------- é só o um mesmo ? -----------------------------
-           --- no final do for muda de estado
-           IF enc_dec = '1' THEN
-               EF <= E4;
-           ELSIF enc_dec = '0' THEN
-               EF <= E3;
-           END IF
+         
+	   EF <= E6; -- permanece no mesmo estado até o contador chegar em mais q 7
          ELSIF -- TENHO Q COLOCAR ALGUMA COISA AQUI?? ----------------- THEN
-              EF <= E6; -- permanece no mesmo estado até o contador chegar em mais q 7
-          END IF
+	 --- no final do for muda de estado
+	      IF enc_dec = '1' THEN
+               EF <= E4;
+              ELSIF enc_dec = '0' THEN
+               EF <= E3;
+              END IF
+         END IF
       END CASE;
 END PROCESS;
 
