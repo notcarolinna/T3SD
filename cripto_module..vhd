@@ -36,7 +36,14 @@ ARCHITECTURE cripto_module OF cripto_module IS
   SIGNAL EF : state; -- Estado futuro 
   SIGNAL busy_sig : STD_LOGIC := '0'; ---- 0 desocupado e 1 ocupado
   SIGNAL ready_sig : STD_LOGIC := '0'; ---- 0 não está pronto e 1 está pronto
-  
+  SIGNAL done_sig : STD_LOGIC := '0'; --- quando for 1 o gost round acabou
+  SIGNAL CM1 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
+  SIGNAL N1 : STD_LOGIC_VECTOR(31 DOWNTO 0);
+  SIGNAL SN : STD_LOGIC_VECTOR(31 DOWNTO 0) := 0; 
+  SIGNAL cont_gost : STD_LOGIC_VECTOR(3 DOWNTO 0);
+  SIGNAL NI : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL mask : STD_LOGIC_VECTOR(31 DOWNTO 0); 
+    
   TYPE matriz IS ARRRAY( natural range <>, natural range <>) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL s_box : matriz ( 0 to 15, 7 downto 0);
   s_box <= (( 4, 10, 9, 2, 13, 8, 0, 14, 6, 11, 1, 12, 7, 15, 5, 3),
@@ -59,9 +66,8 @@ ARCHITECTURE cripto_module OF cripto_module IS
          key[5] = 0x01234567;
          key[6] = 0x89ABCDEF;
          key[7] = 0xDEADBEEF;
- 
 
-
+                  
   -- clock -------------------------------
   PROCESS (clock, reset)
     BEGIN
@@ -94,14 +100,11 @@ PROCESS(EA) -- aqui tem que colocar todos os sinais que a gente usar embaixo dps
        
         WHEN E2 =>
            ---- O QUE FAZ NA ENTRAEDA DE DADOS --------------
-             IF enc_dec = '0' THEN
-             ---- SE TIVER QUE FAZER ALGUMA COISA MAIS VEM AQUI
-                EF <= E3;
-             ELSIF enc_dec = '1' THEN
-             ---- SE TIVER QUE FAZER ALGUMA COISA MAIS VEM AQUI
-                EF <= E4;
-             END IF;
-        
+           ---- gravar os dados nas variáveis, telvez seja o n1, mas eu n tenho crtz
+            CM1 = (N1 + -- ver como passar a chave aqui ---) mod 4294967296; // 2^32 pra manter nos 32 bits, isso ta aqui pq ta fora do loop do gost round
+            IF enc_edc = '1' | enc_dec = '0' THEN
+                 EF <= E6;
+            END IF
         WHEN E3 =>
             --------- O QUE FAZ  NA CRIPTOGRAFIA ---------
 
@@ -110,8 +113,28 @@ PROCESS(EA) -- aqui tem que colocar todos os sinais que a gente usar embaixo dps
 
         WHEN E5 =>
         ---------------  O QUE ACONTECE NA SAIDA DE DADOS ----------- 
-            IF 
-      
+        
+        WHEN E6 => 
+         ---- O QUE ACONTECE NO GOST ROUND -----------------------
+         IF cont_gost <= 7 THEN
+           NI <= (CM1 >> (4 * (7 - cont_gost))) mod 16; --extrai quatro bits consecutivos de CM1, começando pela posição mais significativa, 
+	         --para determinar qual linha da coluna atual da caixa S deve ser acessada. O valor resultante é armazenado na variável Ni.
+           NI = s_box[cont_gost][NI]; --realiza uma substituição usando a s_box. 
+           -- Ela usa o valor NI como um índice para acessar a tabela de substituição s_box e obter o valor correspondente. O resultado substitui o valor original de NI.
+           -- posicionamento dos bits na posição correta
+           mask = mask | NI;   -----  o que isso faz? e só copiei de la pra ver depois --------------------------
+           mask = mask << (28 - (4 * cont_gost)); --a variável mask é deslocada para a esquerda 
+           SN = SN | mask;  -- isso faz um ou entre os dois valores, como se fosse uma porta lógica? --------------------------------
+           cont_gost <= cont_gost + 1; ---------------- é só o um mesmo ? -----------------------------
+           --- no final do for muda de estado
+           IF enc_dec = '1' THEN
+               EF <= E4;
+           ELSIF enc_dec = '0' THEN
+               EF <= E3;
+           END IF
+         ELSIF -- TENHO Q COLOCAR ALGUMA COISA AQUI?? ----------------- THEN
+              EF <= E6; -- permanece no mesmo estado até o contador chegar em mais q 7
+          END IF
       END CASE;
 END PROCESS;
 
