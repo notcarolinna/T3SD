@@ -38,7 +38,9 @@ ARCHITECTURE cripto_module OF cripto_module IS
   SIGNAL ready_sig : STD_LOGIC := '0'; ---- 0 não está pronto e 1 está pronto
   SIGNAL done_sig : STD_LOGIC := '0'; --- quando for 1 o gost round acabou
   SIGNAL CM1 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
+  SIGNAL CM2 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
   SIGNAL N1 : STD_LOGIC_VECTOR(31 DOWNTO 0);
+  SIGNAL R : STD_LOGIC_VECTOR(31 DOWNTO 0);
   SIGNAL SN : STD_LOGIC_VECTOR(31 DOWNTO 0) := 0; 
   SIGNAL cont_gost : STD_LOGIC_VECTOR(3 DOWNTO 0);
   SIGNAL NI : STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -67,7 +69,29 @@ ARCHITECTURE cripto_module OF cripto_module IS
          key[6] = 0x89ABCDEF;
          key[7] = 0xDEADBEEF;
 
-                  
+FUNCTION gost_round (chave : std_logic_vector)
+	RETURN -- tem como não retornar nada? IS
+		CM1 = (N1 + -- ver como passar a chave aqui ---) mod 4294967296; // 2^32 pra manter nos 32 bits, -- pra chave posso fazer uma variável?
+		for cont_gost in 0 to 7 loop
+			NI <= (CM1 >> (4 * (7 - cont_gost))) mod 16; --extrai quatro bits consecutivos de CM1, começando pela posição mais significativa, 
+	       		  --para determinar qual linha da coluna atual da caixa S deve ser acessada. O valor resultante é armazenado na variável Ni.
+           		NI = s_box[cont_gost][NI]; --realiza uma substituição usando a s_box. 
+           		-- Ela usa o valor NI como um índice para acessar a tabela de substituição s_box e obter o valor correspondente. O resultado substitui o valor original de NI.
+          	 	-- posicionamento dos bits na posição correta
+           		mask <= mask or NI;   -----  o que isso faz? e só copiei de la pra ver depois --------------------------
+           		mask <= mask << (28 - (4 * cont_gost)); --a variável mask é deslocada para a esquerda 
+           		SN <= SN or mask;  -- isso faz um ou entre os dois valores, como se fosse uma porta lógica? --------------------------------
+           		cont_gost <= cont_gost + 1; ---------------- é só o um mesmo ? e eu preciso disso ou ele faz automático? -----------------------------
+		end loop;
+		R <= SN;
+	    	mask <= R << 11; -- R é deslocada para a esquerda em 11 posições 
+	   	R <= (R >> 21) or mask; --R é deslocada para a direita em 21 posições, o resultado do deslocamento é combinado com a variável mask com um ou
+	    	CM2 <= R xor N2; --- vhdl tmb é em paralelo? pq se for essas linhas aqui de baixo vai dar caca ------------------------------------------
+    	    	N2 <= N1;
+   	    	N1 <= CM2;	 
+		  
+END FUNCTION
+       
   -- clock -------------------------------
   PROCESS (clock, reset)
     BEGIN
@@ -102,17 +126,29 @@ PROCESS(EA) -- aqui tem que colocar todos os sinais que a gente usar embaixo dps
            ---- O QUE FAZ NA ENTRAEDA DE DADOS --------------
            ---- gravar os dados nas variáveis, telvez seja o n1, mas eu n tenho crtz
 	   ----  isso ta aqui pq ta fora do loop do gost round
-            CM1 = (N1 + -- ver como passar a chave aqui ---) mod 4294967296; // 2^32 pra manter nos 32 bits,
-            IF enc_edc = '1' | enc_dec = '0' THEN
+            CM1 = (N1 + -- ver como passar a chave aqui ---) mod 4294967296; // 2^32 pra manter nos 32 bits, -- pra chave posso fazer uma variável?
+            IF enc_edc = '1' or enc_dec = '0' THEN
                  EF <= E6;
             END IF
         WHEN E3 =>
             --------- O QUE FAZ  NA CRIPTOGRAFIA ---------
 	    ----parte do fim do gost round depois do loop
-
+	    R <= SN;
+	    mask <= R << 11; -- R é deslocada para a esquerda em 11 posições 
+	    R <= (R >> 21) or mask; --R é deslocada para a direita em 21 posições, o resultado do deslocamento é combinado com a variável mask com um ou
+	    CM2 <= R xor N2; --- vhdl tmb é em paralelo? pq se for essas linhas aqui de baixo vai dar caca ------------------------------------------
+    	    N2 <= N1;
+   	    N1 <= CM2;	 
+		   
         WHEN E4 =>
            ----------  QUE  ACONTECE NA DECRIPTOGRAFIA C-------
 	   ----parte do fim do gost round depois do loop
+	    R <= SN;
+	    mask <= R << 11; -- R é deslocada para a esquerda em 11 posições 
+	    R <= (R >> 21) or mask; --R é deslocada para a direita em 21 posições, o resultado do deslocamento é combinado com a variável mask com um ou
+	    CM2 <= R xor N2; --- vhdl tmb é em paralelo? pq se for essas linhas aqui de baixo vai dar caca ------------------------------------------
+    	    N2 <= N1;
+   	    N1 <= CM2;	 
 
         WHEN E5 =>
         ---------------  O QUE ACONTECE NA SAIDA DE DADOS ----------- 
@@ -125,9 +161,9 @@ PROCESS(EA) -- aqui tem que colocar todos os sinais que a gente usar embaixo dps
            NI = s_box[cont_gost][NI]; --realiza uma substituição usando a s_box. 
            -- Ela usa o valor NI como um índice para acessar a tabela de substituição s_box e obter o valor correspondente. O resultado substitui o valor original de NI.
            -- posicionamento dos bits na posição correta
-           mask = mask | NI;   -----  o que isso faz? e só copiei de la pra ver depois --------------------------
-           mask = mask << (28 - (4 * cont_gost)); --a variável mask é deslocada para a esquerda 
-           SN = SN | mask;  -- isso faz um ou entre os dois valores, como se fosse uma porta lógica? --------------------------------
+           mask <= mask or NI;   -----  o que isso faz? e só copiei de la pra ver depois --------------------------
+           mask <= mask << (28 - (4 * cont_gost)); --a variável mask é deslocada para a esquerda 
+           SN <= SN or mask;  -- isso faz um ou entre os dois valores, como se fosse uma porta lógica? --------------------------------
            cont_gost <= cont_gost + 1; ---------------- é só o um mesmo ? -----------------------------
          
 	   EF <= E6; -- permanece no mesmo estado até o contador chegar em mais q 7
@@ -143,4 +179,11 @@ PROCESS(EA) -- aqui tem que colocar todos os sinais que a gente usar embaixo dps
 END PROCESS;
 
 END ARCHITECTURE;
+		   
+	
+		
+---- percebi problemas
+-- ntem com chamar a função se o estado n recebe parâmetro
+--- eu penso que teria que criar uma função , pra fazer o gost round já q ele é muito usado, mas n sei como faz o loop , vou deixar uma tentativa miserável ali em cima
+-- caso esteja certo, tem que mudar oq eu fiz na máquina de estados
 
