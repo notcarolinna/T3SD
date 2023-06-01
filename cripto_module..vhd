@@ -109,6 +109,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
 	    done_sig_8 <= '0';
 	    done_sig_9 <= '0';
 	    done_sig_10 <= '0';
+	    done_sig_11 <= '0';
         ELSIF rising_edge(clock) THEN  
             EA <= EF;
 	    IF EA = E2 THEN
@@ -174,7 +175,21 @@ ARCHITECTURE cripto_module OF cripto_module IS
 	     ELSIF EA = E11 THEN
 		------ AQUELA PARTE DO ENCRIPTOBLOCK????????
 		done_sig_9 <= '1';
+	     ELSIF EA = E12 THEN
+		busy_sig = '1';
+		N2 <= ------------------------------------ ENCRIPTOBLOCK????
+	        N1 <= ------------------------------------ ENCRIPTOBLOCK????
+		key[0] <= key_i(255 DOWNTO 224);
+		key[1] <= key_i(223 DOWNTO 192);
+		key[2] <= key_i(191 DOWNTO 160);
+		key[3] <= key_i(159 DOWNTO 128);
+		key[4] <= key_i(127 DOWNTO 96);
+		key[5] <= key_i(95 DOWNTO 64);
+		key[6] <= key_i(63 DOWNTO 32);
+		key[7] <= key_i(31 DOWNTO 0);
+		done_sig_11 <= '1';
 			
+	----------- NO E19 USAR O done_sig_10 = '1'
         END IF;
  END PROCESS;
       		
@@ -187,36 +202,44 @@ PROCESS(EA)
 		ELSIF start = '1' AND enc_dec = '0' THEN
 			EF <= E12;
 		END IF
+			
 	WHEN E2 => -- ARMAZENAMENTO ENC
 		IF done_sig = '1' THEN
 			EF <= E3;
 		END IF
+			
 	WHEN E3 => -- INICIAÇÃO DO PRIMEIRO FOR ENC
 		IF done_sig_2 = '1' THEN
 			EF <= E4;
 		END IF
+			
 	WHEN E4 => --SOMA DA CHAVE ENC
 		IF done_sig_3 = '1' THEN
 			EF <= E5;
-		END IF  
+		END IF 
+			
 	WHEN E5 => --INICIAÇAO DO FOR DO GOST ROUND ENC
 		IF done_sig_4 = '1' THEN
 			EF <= E6;
 		END IF  
+			
 	WHEN E6 => -- OPERAÇÕES DENTRO DO FOR DO GOST ROUND ENC
 		IF j < 7 THEN  -- É SÓ MENOR PQ COM A SOMA DE UM FICA TUDO BEM ACHO CONFIRMAR ISSO AQUI
 			EF <= E7;
 		ELSE THEN
 			EF <= E8;
 		END IF
+			
 	WHEN E7 => --ICNCREMETENTA CONT DO FOR DO GOST ROUND ENC
 		IF done_sig_5 = '1' THEN
 			EF <= E6;
 		END IF
+			
 	WHEN E8 => --OPERAÇÃO FINAL DA FUNÇÃO GOST ROUND ENC
 		IF done_sig_6 = '1' THEN
 			EF <= E9;
 		END IF
+			
 	WHEN E9 => -- INCREMENTA/DECREMETNA CONTADORES DOS FORS DO ENC
 		IF I = 7 AND K = 2 THEN
 			for_num = '1';
@@ -226,16 +249,22 @@ PROCESS(EA)
 		ELSE THEN
 			EF <= E4;
 		END IF
+			
 	WHEN E10 => --INICIAÇÃO DO SEGUNDO FOR ENC
 		IF done_sig_7 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
 			EF <= E4; 
 		END IF
+			
 	WHEN E11 => -- ULTIMA PARTE DA ENC
 		IF done_sig_9 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
 			ready <= '1';
 			busy <= '0';
 		END IF
+			
 	WHEN E12 => -- ARMAZENAMENTO DEC
+		IF done_sig_11 = '1' THEN
+			EF <= E13;
+		END IF
 		
 	WHEN E13 => -- INICIAÇÃO DO PRIMEIRO FOR DEC
 		
