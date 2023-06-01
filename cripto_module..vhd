@@ -31,7 +31,7 @@ END ENTITY;
 
 ARCHITECTURE cripto_module OF cripto_module IS
   
-  TYPE STATE IS (IDLE, E2, E3, E4, E5, E6. E7, E8); -- Etapas da máquina de estados   N SEI SE PRECISA DE RESET OU N AINDA
+  TYPE STATE IS (IDLE, E2, E3, E4, E5, E6. E7, E8, E9, E10, E11, E12, E13, E14, E15, E16, E17, E18, E19, E20, E21); -- Etapas da máquina de estados   N SEI SE PRECISA DE RESET OU N AINDA
   SIGNAL EA : state; -- Estado atual
   SIGNAL EF : state; -- Estado futuro 
   SIGNAL busy_sig : STD_LOGIC := '0'; ---- 0 desocupado e 1 ocupado   -------------- DA PROBLEMA TER 0 AQUI, ACHO Q SÓ PRECISARIA NO RESET NÃO?
@@ -46,6 +46,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
   SIGNAL done_sig_7 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL done_sig_8 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL done_sig_9 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_10 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL K : INTEGER RANGE 0 TO 2; -- VAI DE 0 A 2
   SIGNAL I : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
   SIGNAL J : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
@@ -107,6 +108,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
 	    done_sig_7 <= '0';	
 	    done_sig_8 <= '0';
 	    done_sig_9 <= '0';
+	    done_sig_10 <= '0';
         ELSIF rising_edge(clock) THEN  
             EA <= EF;
 	    IF EA = E2 THEN
@@ -181,7 +183,9 @@ PROCESS(EA)
     CASE EA IS
        WHEN IDLE =>
 		IF start = '1' AND enc_dec = '1' THEN
-			EF <= E2; 
+			EF <= E2;
+		ELSIF start = '1' AND enc_dec = '0' THEN
+			EF <= E12;
 		END IF
 	WHEN E2 => -- ARMAZENAMENTO ENC
 		IF done_sig = '1' THEN
@@ -229,7 +233,32 @@ PROCESS(EA)
 	WHEN E11 => -- ULTIMA PARTE DA ENC
 		IF done_sig_9 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
 			ready <= '1';
+			busy <= '0';
 		END IF
+	WHEN E12 => -- ARMAZENAMENTO DEC
+		
+	WHEN E13 => -- INICIAÇÃO DO PRIMEIRO FOR DEC
+		
+	WHEN E14 => --SOMA DA CHAVE DEC
+		
+	WHEN E15 => --INICIAÇAO DO FOR DO GOST ROUND DEC
+		
+	WHEN E16 => -- OPERAÇÕES DENTRO DO FOR DO GOST ROUND DEC
+	
+	WHEN E17 => --ICNCREMETENTA CONT DO FOR DO GOST ROUND DEC
+	
+	WHEN E18 => --OPERAÇÃO FINAL DA FUNÇÃO GOST ROUND DEC
+			
+	WHEN E19 => -- INCREMENTA/DECREMETNA CONTADORES DOS FORS DO DEC
+			
+	WHEN E20 => --INICIAÇÃO DO SEGUNDO FOR DEC
+		
+	WHEN E21 => -- ULTIMA PARTE DA DEC
+		IF done_sig_10 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
+			ready <= '1';
+			busy <= '0';
+		END IF
+			
       END CASE;
 END PROCESS;
 
