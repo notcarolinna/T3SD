@@ -189,8 +189,9 @@ ARCHITECTURE cripto_module OF cripto_module IS
 		key[7] <= key_i(31 DOWNTO 0);
 		done_sig_11 <= '1';
 			
+             END IF	
 	----------- NO E19 USAR O done_sig_10 = '1'
-        END IF;
+        END IF
  END PROCESS;
       		
 PROCESS(EA)
