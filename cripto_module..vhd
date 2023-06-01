@@ -36,16 +36,23 @@ ARCHITECTURE cripto_module OF cripto_module IS
   SIGNAL EF : state; -- Estado futuro 
   SIGNAL busy_sig : STD_LOGIC := '0'; ---- 0 desocupado e 1 ocupado
   SIGNAL ready_sig : STD_LOGIC := '0'; ---- 0 não está pronto e 1 está pronto
-  SIGNAL done_sig : STD_LOGIC := '0'; --- quando for 1 o gost round acabou
-  --SIGNAL CM1 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
+  SIGNAL done_sig : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_2 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_3 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_4 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_5 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL K : INTEGER RANGE 0 TO 2; -- VAI DE 0 A 2
+  SIGNAL I : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
+  SIGNAL J : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
+  SIGNAL CM1 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
   --SIGNAL CM2 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
   SIGNAL N1 : STD_LOGIC_VECTOR(31 DOWNTO 0);
   SIGNAL N2 : STD_LOGIC_VECTOR(31 DOWNTO 0);
   --SIGNAL R : STD_LOGIC_VECTOR(31 DOWNTO 0);
- -- SIGNAL SN : STD_LOGIC_VECTOR(31 DOWNTO 0) := 0; 
+  SIGNAL SN : STD_LOGIC_VECTOR(31 DOWNTO 0); 
  -- SIGNAL cont_gost : STD_LOGIC_VECTOR(3 DOWNTO 0);
- -- SIGNAL NI : STD_LOGIC_VECTOR(7 DOWNTO 0);
- -- SIGNAL mask : STD_LOGIC_VECTOR(31 DOWNTO 0); 
+  SIGNAL NI : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL mask : STD_LOGIC_VECTOR(31 DOWNTO 0); 
     
   TYPE matriz IS ARRRAY( natural range <>, natural range <>) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL s_box : matriz ( 0 to 15, 7 downto 0);
@@ -82,6 +89,12 @@ ARCHITECTURE cripto_module OF cripto_module IS
 	    N1 <= (OTHERS=>'0'); -- ZEREI O VETOR TODO DO N1
 	    N2 <= (OTHERS=>'0');
 	    key <= (OTHERS=>'0');
+	    CM1 <= (OTHERS=>'0');
+	    done_sig <= '0';
+	    done_sig_2 <= '0';
+	    done_sig_3 <= '0';
+	    done_sig_4 <= '0';
+	    done_sig_5 <= '0';
         ELSIF rising_edge(clock) THEN  
             EA <= EF;
 	    IF EA = E2 THEN
@@ -94,7 +107,30 @@ ARCHITECTURE cripto_module OF cripto_module IS
 		key[4] <= key_i(127 DOWNTO 96);
 		key[5] <= key_i(95 DOWNTO 64);
 		key[6] <= key_i(63 DOWNTO 32);
-		key[7] <= key_i(31 DOWNTO 0);	
+		key[7] <= key_i(31 DOWNTO 0);
+		done_sig <= '1'; -- para saber que tem que passar pro estado 3
+	     ELSIF EA = E3 THEN
+		k <= 0; -- inicializer o cont em 0
+		i <= 0; -- inicializei em 0
+		done_sig_2 <= '1';
+	     ELSIF EA = E4 THEN
+		CM1 <= N1 + key[i];
+		SN <= (OTHERS=>'0'); -- INICIALIZAR EM 0
+		done_sig_3 <= '1';
+	     ELSIF EA = E5 THEN
+		J <= 0;
+		done_sig_4 <= '1';
+	     ELSIF EA = E6 THEN
+		done_sig <= '0'; -- para poder passar o sinal certo no e7
+		Ni <= (CM1 srl (4 * (7 - j))) mod 16; -- confirmar se srl desloca para a direita mesmo em vhdl
+		Ni <= s_box[j][Ni]; -- será q o ni em dois lufgares da ruim?
+		mask <= (OTHERS=>'0');
+		mask <= mask or Ni;  -- isso vai dar ruim pq é paralelo?
+		mask <= mask sll (28 - (4 * j));
+		SN <= SN or mask;
+	     ELSIF EA = E7 THEN
+		J <= J + 1;
+		done_sig_5 <= '1';
         END IF;
  END PROCESS;
       		
@@ -106,18 +142,34 @@ PROCESS(EA) -- aqui tem que colocar todos os sinais que a gente usar embaixo dps
 			EF <= E2; -- ESTADO 2 DA MÁQUINA DO SOR
 		END IF
 	WHEN E2 => 
+		IF done_sig = '1' THEN
+			EF <= E3;
+		END IF
+	WHEN E3 => 
+		IF done_sig_2 = '1' THEN
+			EF <= E4;
+		END IF
+	WHEN E4 =>
+		IF done_sig_3 = '1' THEN
+			EF <= E5;
+		END IF  
+	WHEN E5 => 
+		IF done_sig_4 = '1' THEN
+			EF <= E6;
+		END IF  
+	WHEN E6 =>
+		IF j <= 7 THEN
+			EF <= E7;
+		ELSE THEN
+			EF <= E8;
+		END IF
+	WHEN E7 => 
+		IF done_sig_5 = '1' THEN
+			EF <= E6;
+		END IF
+	WHEN E8 =>
 		
-
-		   
       END CASE;
 END PROCESS;
 
 END ARCHITECTURE;
-		   
-	
-		
----- percebi problemas
--- ntem com chamar a função se o estado n recebe parâmetro
---- eu penso que teria que criar uma função , pra fazer o gost round já q ele é muito usado, mas n sei como faz o loop , vou deixar uma tentativa miserável ali em cima
--- caso esteja certo, tem que mudar oq eu fiz na máquina de estados
-
