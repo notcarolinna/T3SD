@@ -31,28 +31,33 @@ END ENTITY;
 
 ARCHITECTURE cripto_module OF cripto_module IS
   
-  TYPE STATE IS (IDLE, E2, E3, E4, E5); -- Etapas da máquina de estados   N SEI SE PRECISA DE RESET OU N AINDA
+  TYPE STATE IS (IDLE, E2, E3, E4, E5, E6. E7, E8); -- Etapas da máquina de estados   N SEI SE PRECISA DE RESET OU N AINDA
   SIGNAL EA : state; -- Estado atual
   SIGNAL EF : state; -- Estado futuro 
-  SIGNAL busy_sig : STD_LOGIC := '0'; ---- 0 desocupado e 1 ocupado
+  SIGNAL busy_sig : STD_LOGIC := '0'; ---- 0 desocupado e 1 ocupado   -------------- DA PROBLEMA TER 0 AQUI, ACHO Q SÓ PRECISARIA NO RESET NÃO?
   SIGNAL ready_sig : STD_LOGIC := '0'; ---- 0 não está pronto e 1 está pronto
+  SIGNAL for_num : STD_LOGIC := '0'; --- quando for 0 é o primeiro e qnd for ''1' é o segundo o acabou
   SIGNAL done_sig : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL done_sig_2 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL done_sig_3 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL done_sig_4 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL done_sig_5 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_6 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_7 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_8 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_9 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL K : INTEGER RANGE 0 TO 2; -- VAI DE 0 A 2
   SIGNAL I : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
   SIGNAL J : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
   SIGNAL CM1 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
-  --SIGNAL CM2 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
+  SIGNAL CM2 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
   SIGNAL N1 : STD_LOGIC_VECTOR(31 DOWNTO 0);
   SIGNAL N2 : STD_LOGIC_VECTOR(31 DOWNTO 0);
-  --SIGNAL R : STD_LOGIC_VECTOR(31 DOWNTO 0);
+  SIGNAL R : STD_LOGIC_VECTOR(31 DOWNTO 0);
   SIGNAL SN : STD_LOGIC_VECTOR(31 DOWNTO 0); 
- -- SIGNAL cont_gost : STD_LOGIC_VECTOR(3 DOWNTO 0);
   SIGNAL NI : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL mask : STD_LOGIC_VECTOR(31 DOWNTO 0); 
+  SIGNAL mask_f : STD_LOGIC_VECTOR(31 DOWNTO 0);
     
   TYPE matriz IS ARRRAY( natural range <>, natural range <>) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL s_box : matriz ( 0 to 15, 7 downto 0);
@@ -69,7 +74,6 @@ ARCHITECTURE cripto_module OF cripto_module IS
   TYPE VETOR IS ARRRAY( natural range <> ) OF STD_LOGIC_VECTOR(32 DOWNTO 0);			
   SIGNAL KEY : VETOR ( 0 to 7); -- TEM QUE SEPARAR PELOS BITS MAIS SIGNIFICATIVOS  ATÉ OS MENOS DE 32 EM 32  BITS, NO CASO A ENTRADA DE 256
   
-			----- OS  CONTADORES PODERM SER INTEGER
 
   -- clock -------------------------------
   PROCESS (clock, reset)
@@ -88,16 +92,25 @@ ARCHITECTURE cripto_module OF cripto_module IS
             EA <= IDLE;
 	    N1 <= (OTHERS=>'0'); -- ZEREI O VETOR TODO DO N1
 	    N2 <= (OTHERS=>'0');
+	    NI <= (OTHERS=>'0');
 	    key <= (OTHERS=>'0');
 	    CM1 <= (OTHERS=>'0');
+	    CM2 <= (OTHERS=>'0');
+	    mask_f <= (OTHERS=>'0');
+	    R <= (OTHERS=>'0');
 	    done_sig <= '0';
 	    done_sig_2 <= '0';
 	    done_sig_3 <= '0';
 	    done_sig_4 <= '0';
 	    done_sig_5 <= '0';
+	    done_sig_6 <= '0';
+	    done_sig_7 <= '0';	
+	    done_sig_8 <= '0';
+	    done_sig_9 <= '0';
         ELSIF rising_edge(clock) THEN  
             EA <= EF;
 	    IF EA = E2 THEN
+		busy_sig = '1';
 		N2 <= data_i(31 DOWNTO 0);
 	        N1 <= data_i(63 DOWNTO 32);
 		key[0] <= key_i(255 DOWNTO 224);
@@ -110,6 +123,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
 		key[7] <= key_i(31 DOWNTO 0);
 		done_sig <= '1'; -- para saber que tem que passar pro estado 3
 	     ELSIF EA = E3 THEN
+		busy <= busy_sig;
 		k <= 0; -- inicializer o cont em 0
 		i <= 0; -- inicializei em 0
 		done_sig_2 <= '1';
@@ -126,49 +140,96 @@ ARCHITECTURE cripto_module OF cripto_module IS
 		Ni <= s_box[j][Ni]; -- será q o ni em dois lufgares da ruim?
 		mask <= (OTHERS=>'0');
 		mask <= mask or Ni;  -- isso vai dar ruim pq é paralelo?
-		mask <= mask sll (28 - (4 * j));
+		mask <= mask sll (28 - (4 * j));  -- sll =  shift left logic
 		SN <= SN or mask;
 	     ELSIF EA = E7 THEN
 		J <= J + 1;
-		done_sig_5 <= '1';
+		done_sig_5 <= '1'; 
+	     ELSIF EA = E8 THEN ------------------------------ CONFERIR a sintaxe  DESSE -----------------------------
+		mask_f <= R sll 11;
+		R <= (R srl 21) or mask_f;
+		CM2 <= R XOR N2;
+    		N2 <= N1;
+    		N1 <= CM2;
+		done_sig_6 <= '1';
+	     ELSIF EA = E9 THEN
+		IF for_num = '0' THEN
+			IF I < 7 THEN
+				I <= I + 1;
+			ELSIF I = 7 AND K < 3 THEN
+		 		K <= K + 1;
+			END IF
+		ELSIF for_num = '1' THEN
+			IF I < 0 THEN
+			 I <= I - 1 ;
+			ELSE THEN
+			done_sig_8 = '1';
+			END IF
+		END IF
+	     ELSIF EA = E10 THEN
+		j < = 0;
+		done_sig_7 <= '1';
+	     ELSIF EA = E11 THEN
+		------ AQUELA PARTE DO ENCRIPTOBLOCK????????
+		done_sig_9 <= '1';
+			
         END IF;
  END PROCESS;
       		
-PROCESS(EA) -- aqui tem que colocar todos os sinais que a gente usar embaixo dps
+PROCESS(EA)
     BEGIN
     CASE EA IS
        WHEN IDLE =>
 		IF start = '1' AND enc_dec = '1' THEN
 			EF <= E2; -- ESTADO 2 DA MÁQUINA DO SOR
 		END IF
-	WHEN E2 => 
+	WHEN E2 => -- ARMAZENAMENTO ENC
 		IF done_sig = '1' THEN
 			EF <= E3;
 		END IF
-	WHEN E3 => 
+	WHEN E3 => -- INICIAÇÃO DO PRIMEIRO FOR
 		IF done_sig_2 = '1' THEN
 			EF <= E4;
 		END IF
-	WHEN E4 =>
+	WHEN E4 => --SOMA DA CHAVE
 		IF done_sig_3 = '1' THEN
 			EF <= E5;
 		END IF  
-	WHEN E5 => 
+	WHEN E5 => --INICIAÇAO DO FOR DO GOST ROUND
 		IF done_sig_4 = '1' THEN
 			EF <= E6;
 		END IF  
-	WHEN E6 =>
-		IF j <= 7 THEN
+	WHEN E6 => -- OPERAÇÕES DENTRO DO FOR DO GOST ROUND
+		IF j < 7 THEN  -- É SÓ MENOR PQ COM A SOMA DE UM FICA TUDO BEM ACHO CONFIRMAR ISSO AQUI
 			EF <= E7;
 		ELSE THEN
 			EF <= E8;
 		END IF
-	WHEN E7 => 
+	WHEN E7 => --ICNCREMETENTA CONT DO FOR DO GOST ROUND
 		IF done_sig_5 = '1' THEN
 			EF <= E6;
 		END IF
 	WHEN E8 =>
-		
+		IF done_sig_6 = '1' THEN
+			EF <= E9;
+		END IF
+	WHEN E9 => 
+		IF I = 7 AND K = 2 THEN
+			for_num = '1';
+			EF <= E10;
+		ELSIF done_sig_8 = '1' THEN
+			EF <= E11;
+		ELSE THEN
+			EF <= E4;
+		END IF
+	WHEN E10 => 
+		IF done_sig_7 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
+			EF <= E4; 
+		END IF
+	WHEN E11 => 
+		IF done_sig_9 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
+			ready <= '1';
+		END IF
       END CASE;
 END PROCESS;
 
