@@ -34,8 +34,6 @@ ARCHITECTURE cripto_module OF cripto_module IS
   TYPE STATE IS (IDLE, E2, E3, E4, E5, E6. E7, E8, E9, E10, E11, E12, E13, E14, E15, E16, E17, E18, E19, E20, E21); -- Etapas da máquina de estados   N SEI SE PRECISA DE RESET OU N AINDA
   SIGNAL EA : state; -- Estado atual
   SIGNAL EF : state; -- Estado futuro 
-  SIGNAL busy_sig : STD_LOGIC := '0'; ---- 0 desocupado e 1 ocupado   -------------- DA PROBLEMA TER 0 AQUI, ACHO Q SÓ PRECISARIA NO RESET NÃO?
-  SIGNAL ready_sig : STD_LOGIC := '0'; ---- 0 não está pronto e 1 está pronto
   SIGNAL for_num : STD_LOGIC := '0'; --- quando for 0 é o primeiro e qnd for ''1' é o segundo o acabou
   SIGNAL done_sig : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL done_sig_2 : STD_LOGIC := '0'; --- quando for 1 o acabou
@@ -47,18 +45,24 @@ ARCHITECTURE cripto_module OF cripto_module IS
   SIGNAL done_sig_8 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL done_sig_9 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL done_sig_10 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_11 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_12 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_13 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_14 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_15 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_16 : STD_LOGIC := '0'; --- quando for 1 o acabou
+  SIGNAL done_sig_17 : STD_LOGIC := '0'; --- quando for 1 o acabou
   SIGNAL K : INTEGER RANGE 0 TO 2; -- VAI DE 0 A 2
   SIGNAL I : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
   SIGNAL J : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
-  SIGNAL CM1 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
-  SIGNAL CM2 : STD_LOGIC_VECTOR(31 DOWNTO 0); 
+  SIGNAL CM1 : STD_LOGIC_VECTOR(31 DOWNTO 0);  
   SIGNAL N1 : STD_LOGIC_VECTOR(31 DOWNTO 0);
   SIGNAL N2 : STD_LOGIC_VECTOR(31 DOWNTO 0);
   SIGNAL R : STD_LOGIC_VECTOR(31 DOWNTO 0);
   SIGNAL SN : STD_LOGIC_VECTOR(31 DOWNTO 0); 
   SIGNAL NI : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL mask : STD_LOGIC_VECTOR(31 DOWNTO 0); 
-  SIGNAL mask_f : STD_LOGIC_VECTOR(31 DOWNTO 0);
+
     
   TYPE matriz IS ARRRAY( natural range <>, natural range <>) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL s_box : matriz ( 0 to 15, 7 downto 0);
@@ -87,7 +91,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
  END PROCESS;
 
   --máquina de estados -------------------
- PROCESS (reset, clock) ---- tem que zerar todas as variáveis depois
+ PROCESS (reset, clock) 
     BEGIN
         IF reset = '1' THEN
             EA <= IDLE;
@@ -96,8 +100,6 @@ ARCHITECTURE cripto_module OF cripto_module IS
 	    NI <= (OTHERS=>'0');
 	    key <= (OTHERS=>'0');
 	    CM1 <= (OTHERS=>'0');
-	    CM2 <= (OTHERS=>'0');
-	    mask_f <= (OTHERS=>'0');
 	    R <= (OTHERS=>'0');
 	    done_sig <= '0';
 	    done_sig_2 <= '0';
@@ -110,10 +112,16 @@ ARCHITECTURE cripto_module OF cripto_module IS
 	    done_sig_9 <= '0';
 	    done_sig_10 <= '0';
 	    done_sig_11 <= '0';
+	    done_sig_12 <= '0';
+	    done_sig_13 <= '0';
+	    done_sig_14 <= '0';
+	    done_sig_15 <= '0';
+	    done_sig_16 <= '0';
+	    done_sig_17 <= '0';
         ELSIF rising_edge(clock) THEN  
             EA <= EF;
 	    IF EA = E2 THEN
-		busy_sig = '1';
+		busy <= '1';
 		N2 <= data_i(31 DOWNTO 0);
 	        N1 <= data_i(63 DOWNTO 32);
 		key[0] <= key_i(255 DOWNTO 224);
@@ -126,7 +134,6 @@ ARCHITECTURE cripto_module OF cripto_module IS
 		key[7] <= key_i(31 DOWNTO 0);
 		done_sig <= '1'; -- para saber que tem que passar pro estado 3
 	     ELSIF EA = E3 THEN
-		busy <= busy_sig;
 		k <= 0; -- inicializer o cont em 0
 		i <= 0; -- inicializei em 0
 		done_sig_2 <= '1';
@@ -138,22 +145,19 @@ ARCHITECTURE cripto_module OF cripto_module IS
 		J <= 0;
 		done_sig_4 <= '1';
 	     ELSIF EA = E6 THEN
-		done_sig <= '0'; -- para poder passar o sinal certo no e7
-		Ni <= (CM1 srl (4 * (7 - j))) mod 16; -- confirmar se srl desloca para a direita mesmo em vhdl
-		Ni <= s_box[j][Ni]; -- será q o ni em dois lufgares da ruim?
+		Ni <= (CM1 srl (4 * (7 - j))) mod 16; -- srl = shift rigth logic
+		Ni <= s_box[j][Ni]; 
 		mask <= (OTHERS=>'0');
-		mask <= mask or Ni;  -- isso vai dar ruim pq é paralelo?
+		mask <= mask or Ni;  
 		mask <= mask sll (28 - (4 * j));  -- sll =  shift left logic
 		SN <= SN or mask;
 	     ELSIF EA = E7 THEN
 		J <= J + 1;
 		done_sig_5 <= '1'; 
 	     ELSIF EA = E8 THEN ------------------------------ CONFERIR a sintaxe  DESSE -----------------------------
-		mask_f <= R sll 11;
-		R <= (R srl 21) or mask_f;
-		CM2 <= R XOR N2;
+		R <= SN;
     		N2 <= N1;
-    		N1 <= CM2;
+    		N1 <= ( R srl 21 or R sll 11) XOR N2;
 		done_sig_6 <= '1';
 	     ELSIF EA = E9 THEN
 		IF for_num = '0' THEN
@@ -170,15 +174,16 @@ ARCHITECTURE cripto_module OF cripto_module IS
 			END IF
 		END IF
 	     ELSIF EA = E10 THEN
-		j < = 0;
+		j <= 0;
 		done_sig_7 <= '1';
 	     ELSIF EA = E11 THEN
-		------ AQUELA PARTE DO ENCRIPTOBLOCK????????
+		data_o(31 DOWNTO 0) <= N1;
+	        data_o(63 DOWNTO 32) <= N2;
 		done_sig_9 <= '1';
 	     ELSIF EA = E12 THEN
-		busy_sig = '1';
-		N2 <= ------------------------------------ ENCRIPTOBLOCK????
-	        N1 <= ------------------------------------ ENCRIPTOBLOCK????
+		busy <= '1';
+		N2 <= data_i(31 DOWNTO 0);
+	        N1 <= data_i(63 DOWNTO 32);
 		key[0] <= key_i(255 DOWNTO 224);
 		key[1] <= key_i(223 DOWNTO 192);
 		key[2] <= key_i(191 DOWNTO 160);
@@ -188,9 +193,54 @@ ARCHITECTURE cripto_module OF cripto_module IS
 		key[6] <= key_i(63 DOWNTO 32);
 		key[7] <= key_i(31 DOWNTO 0);
 		done_sig_11 <= '1';
+	      ELSIF EA = E13 THEN  
+		i <= 0; -- inicializei em 0
+		done_sig_12 <= '1';
+	      ELSIF EA = E14 THEN
+		CM1 <= N1 + key[i];
+		SN <= (OTHERS=>'0'); -- INICIALIZAR EM 0
+		done_sig_13 <= '1';
+	      ELSIF EA = E15 THEN
+		J <= 0;
+		done_sig_14 <= '1';
+	      ELSIF EA = E16 THEN
+		Ni <= (CM1 srl (4 * (7 - j))) mod 16; -- srl = shift rigth logic
+		Ni <= s_box[j][Ni]; 
+		mask <= (OTHERS=>'0');
+		mask <= mask or Ni;  
+		mask <= mask sll (28 - (4 * j));  -- sll =  shift left logic
+		SN <= SN or mask;
+	      ELSIF EA = E17 THEN
+		J <= J + 1;
+		done_sig_15 <= '1'; 
+	      ELSIF EA = E18 THEN
+		R <= SN;
+    		N2 <= N1;
+    		N1 <= ( R srl 21 or R sll 11) XOR N2;
+		done_sig_16 <= '1';
+	      ELSIF EA = E19 THEN
+		IF for_num = '0' THEN
+			IF I < 7 THEN
+				I <= I + 1;
+			END IF
+		ELSIF for_num = '1' THEN
+			IF I > 0 THEN
+				I <= I - 1;
+			ELSIF I = 0 AND K < 3 THEN
+		 		K <= K + 1;
+			ELSE THEN  ------------------------------ SE NENHUM DOS DOIS ACIMA ACONTECER  QUER DIZER QUE TUDO JÁ ACABOU
+				done_sig_10 = '1';
+			END IF
+		END IF
+	      ELSIF EA = E20 THEN
+	      		j <= 0;
+			done_sig_17 <= '1';	
+	      ELSIF EA = E21 THEN
+		    data_o(31 DOWNTO 0) <= N1;
+	       	    data_o(63 DOWNTO 32) <= N2;
+		    done_sig_18 <= '1';
 			
-             END IF	
-	----------- NO E19 USAR O done_sig_10 = '1'
+             END IF	 
         END IF
  END PROCESS;
       		
@@ -252,12 +302,12 @@ PROCESS(EA)
 		END IF
 			
 	WHEN E10 => --INICIAÇÃO DO SEGUNDO FOR ENC
-		IF done_sig_7 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
+		IF done_sig_7 = '1' THEN   
 			EF <= E4; 
 		END IF
 			
 	WHEN E11 => -- ULTIMA PARTE DA ENC
-		IF done_sig_9 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
+		IF done_sig_9 = '1' THEN  
 			ready <= '1';
 			busy <= '0';
 		END IF
@@ -268,23 +318,54 @@ PROCESS(EA)
 		END IF
 		
 	WHEN E13 => -- INICIAÇÃO DO PRIMEIRO FOR DEC
+		IF done_sig_12 = '1' THEN
+			EF <= E14;
+		END IF
 		
 	WHEN E14 => --SOMA DA CHAVE DEC
+		IF done_sig_13 = '1' THEN
+			EF <= E15;
+		END IF
 		
 	WHEN E15 => --INICIAÇAO DO FOR DO GOST ROUND DEC
+		IF done_sig_14 = '1' THEN
+			EF <= E16;
+		END IF
 		
 	WHEN E16 => -- OPERAÇÕES DENTRO DO FOR DO GOST ROUND DEC
+		IF j < 7 THEN  -- É SÓ MENOR PQ COM A SOMA DE UM FICA TUDO BEM ACHO CONFIRMAR ISSO AQUI
+			EF <= E17;
+		ELSE THEN
+			EF <= E18;
+		END IF
 	
 	WHEN E17 => --ICNCREMETENTA CONT DO FOR DO GOST ROUND DEC
+		IF done_sig_15 = '1' THEN
+			EF <= E16;
+		END IF
 	
 	WHEN E18 => --OPERAÇÃO FINAL DA FUNÇÃO GOST ROUND DEC
+		IF done_sig_16 = '1' THEN
+			EF <= E19;
+		END IF
 			
 	WHEN E19 => -- INCREMENTA/DECREMETNA CONTADORES DOS FORS DO DEC
+		IF I = 7 THEN
+			for_num <= '1';
+			EF <= E20;
+		ELSIF done_sig_10 = '1' THEN
+			EF <= E21;
+		ELSE THEN
+			EF <= E14;
+		END IF
 			
 	WHEN E20 => --INICIAÇÃO DO SEGUNDO FOR DEC
+		IF done_sig_17 = '1' THEN
+			EF <= E14;
+		END IF
 		
 	WHEN E21 => -- ULTIMA PARTE DA DEC
-		IF done_sig_10 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
+		IF done_sig_18 = '1' THEN   ----  POSSO USAR O MESMO I NEH, NÃO DA PROBLEMA?
 			ready <= '1';
 			busy <= '0';
 		END IF
