@@ -154,7 +154,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
 	     ELSIF EA = E7 THEN
 		J <= J + 1;
 		done_sig_5 <= '1'; 
-	     ELSIF EA = E8 THEN ------------------------------ CONFERIR a sintaxe  DESSE -----------------------------
+	     ELSIF EA = E8 THEN 
 		R <= SN;
     		N2 <= N1;
     		N1 <= ( R srl 21 or R sll 11) XOR N2;
