@@ -14,12 +14,12 @@ ENTITY cripto_module IS
         enc_dec : IN STD_LOGIC; -- Entrada
         reset : IN STD_LOGIC; -- Entrada
         clock : IN STD_LOGIC; -- Entrada
-        data_i : IN STD_LOGIC(63 DOWNTO 0); -- Entrada
-        key_i : IN STD_LOGIC(255 DOWNTO 0); -- Entrada
+        data_i : IN STD_LOGIC_VECTOR(63 DOWNTO 0); -- Entrada
+        key_i : IN STD_LOGIC_VECTOR(255 DOWNTO 0); -- Entrada
 
         busy : OUT STD_LOGIC; -- Saída
         ready : OUT STD_LOGIC; -- Saída
-        data_o : OUT STD_LOGIC(63 DOWNTO 0) -- Saída
+        data_o : OUT STD_LOGIC_VECTOR(63 DOWNTO 0) -- Saída
 
     );
 
