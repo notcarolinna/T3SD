@@ -138,7 +138,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
             ELSIF EA = E8 THEN
                 R <= SN;
                 N2 <= N1;
-                N1 <= (R SRL 21 OR R SLL 11) XOR N2;
+                N1 <= ((R SRL 21) OR (R SLL 11)) XOR N2;
                 done_sig_6 <= '1';
             ELSIF EA = E9 THEN
                 IF for_num = '0' THEN
