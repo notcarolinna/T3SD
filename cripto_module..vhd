@@ -63,30 +63,30 @@ ARCHITECTURE cripto_module OF cripto_module IS
     SIGNAL NI : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL mask : STD_LOGIC_VECTOR(31 DOWNTO 0);
     TYPE matriz IS ARRAY(NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
-    SIGNAL s_box : matriz (0 TO 15, 7 DOWNTO 0);
+    SIGNAL s_box : matriz (0 TO 15, 7 DOWNTO 0) := ((x"4", x"A", x"9", x"2", x"D", x"8", x"0", x"E", x"6", x"B", x"1", x"C", x"7", x"F", x"5", x"3"),
+        (x"E", x"B", x"4", x"C", x"6", x"D", x"F", x"A", x"2", x"3", x"8", x"1", x"0", x"7", x"5", x"9"),
+        (x"5", x"8", x"1", x"D", x"A", x"3", x"4", x"2", x"E", x"F", x"C", x"7", x"6", x"0", x"9", x"B"),
+        (x"7", x"D", x"A", x"1", x"0", x"8", x"9", x"F", x"E", x"4", x"6", x"C", x"B", x"2", x"5", x"3"),
+        (x"6", x"C", x"7", x"1", x"5", x"F", x"D", x"8", x"4", x"A", x"9", x"E", x"0", x"3", x"B", x"2"),
+        (x"4", x"B", x"A", x"0", x"7", x"2", x"1", x"D", x"3", x"6", x"8", x"5", x"9", x"C", x"F", x"E"),
+        (x"D", x"B", x"4", x"1", x"3", x"F", x"5", x"9", x"0", x"A", x"E", x"7", x"6", x"8", x"2", x"C"),
+        (x"1", x"F", x"D", x"0", x"5", x"7", x"A", x"4", x"9", x"2", x"3", x"E", x"6", x"B", x"8", x"C"));
    
-    TYPE VETOR IS ARRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR(32 DOWNTO 0);
+    TYPE VETOR IS ARRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL KEY : VETOR (0 TO 7); -- TEM QUE SEPARAR PELOS BITS MAIS SIGNIFICATIVOS  ATÉ OS MENOS DE 32 EM 32  BITS, NO CASO A ENTRADA DE 256
     BEGIN
-    s_box <= ((4, 10, 9, 2, 13, 8, 0, 14, 6, 11, 1, 12, 7, 15, 5, 3),
-        (14, 11, 4, 12, 6, 13, 15, 10, 2, 3, 8, 1, 0, 7, 5, 9),
-        (5, 8, 1, 13, 10, 3, 4, 2, 14, 15, 12, 7, 6, 0, 9, 11),
-        (7, 13, 10, 1, 0, 8, 9, 15, 14, 4, 6, 12, 11, 2, 5, 3),
-        (6, 12, 7, 1, 5, 15, 13, 8, 4, 10, 9, 14, 0, 3, 11, 2),
-        (4, 11, 10, 0, 7, 2, 1, 13, 3, 6, 8, 5, 9, 12, 15, 14),
-        (13, 11, 4, 1, 3, 15, 5, 9, 0, 10, 14, 7, 6, 8, 2, 12),
-        (1, 15, 13, 0, 5, 7, 10, 4, 9, 2, 3, 14, 6, 11, 8, 12));
+    --s_box <= 
     --máquina de estados -------------------
     PROCESS (reset, clock)
     BEGIN
         IF reset = '1' THEN
             EA <= IDLE;
-            N1 <= (OTHERS => '0'); -- ZEREI O VETOR TODO DO N1
-            N2 <= (OTHERS => '0');
-            NI <= (OTHERS => '0');
-            key <= (OTHERS => '0');
-            CM1 <= (OTHERS => '0');
-            R <= (OTHERS => '0');
+            N1 <= (OTHERS=>(OTHERS => '0')); -- ZEREI O VETOR TODO DO N1
+            N2 <= (OTHERS=>(OTHERS => '0'));
+            NI <= (OTHERS=>(OTHERS => '0'));
+            key <= (OTHERS=>(OTHERS => '0'));
+            CM1 <= (OTHERS=>(OTHERS => '0'));
+            R <= (OTHERS=>(OTHERS => '0'));
             done_sig <= '0';
             done_sig_2 <= '0';
             done_sig_3 <= '0';
