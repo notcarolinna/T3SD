@@ -63,15 +63,16 @@ ARCHITECTURE cripto_module OF cripto_module IS
     SIGNAL NI : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL mask : STD_LOGIC_VECTOR(31 DOWNTO 0);
     TYPE matriz IS ARRAY(NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
+
     SIGNAL s_box : matriz (0 TO 15, 7 DOWNTO 0) := ((x"4", x"A", x"9", x"2", x"D", x"8", x"0", x"E", x"6", x"B", x"1", x"C", x"7", x"F", x"5", x"3"),
-        (x"E", x"B", x"4", x"C", x"6", x"D", x"F", x"A", x"2", x"3", x"8", x"1", x"0", x"7", x"5", x"9"),
-        (x"5", x"8", x"1", x"D", x"A", x"3", x"4", x"2", x"E", x"F", x"C", x"7", x"6", x"0", x"9", x"B"),
-        (x"7", x"D", x"A", x"1", x"0", x"8", x"9", x"F", x"E", x"4", x"6", x"C", x"B", x"2", x"5", x"3"),
-        (x"6", x"C", x"7", x"1", x"5", x"F", x"D", x"8", x"4", x"A", x"9", x"E", x"0", x"3", x"B", x"2"),
-        (x"4", x"B", x"A", x"0", x"7", x"2", x"1", x"D", x"3", x"6", x"8", x"5", x"9", x"C", x"F", x"E"),
-        (x"D", x"B", x"4", x"1", x"3", x"F", x"5", x"9", x"0", x"A", x"E", x"7", x"6", x"8", x"2", x"C"),
-        (x"1", x"F", x"D", x"0", x"5", x"7", x"A", x"4", x"9", x"2", x"3", x"E", x"6", x"B", x"8", x"C"));
-   
+(x"E", x"B", x"4", x"C", x"6", x"D", x"F", x"A", x"2", x"3", x"8", x"1", x"0", x"7", x"5", x"9"),
+(x"5", x"8", x"1", x"D", x"A", x"3", x"4", x"2", x"E", x"F", x"C", x"7", x"6", x"0", x"9", x"B"),
+(x"7", x"D", x"A", x"1", x"0", x"8", x"9", x"F", x"E", x"4", x"6", x"C", x"B", x"2", x"5", x"3"),
+(x"6", x"C", x"7", x"1", x"5", x"F", x"D", x"8", x"4", x"A", x"9", x"E", x"0", x"3", x"B", x"2"),
+(x"4", x"B", x"A", x"0", x"7", x"2", x"1", x"D", x"3", x"6", x"8", x"5", x"9", x"C", x"F", x"E"),
+(x"D", x"B", x"4", x"1", x"3", x"F", x"5", x"9", x"0", x"A", x"E", x"7", x"6", x"8", x"2", x"C"),
+(x"1", x"F", x"D", x"0", x"5", x"7", x"A", x"4", x"9", x"2", x"3", x"E", x"6", x"B", x"8", x"C"));
+
     TYPE VETOR IS ARRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL KEY : VETOR (0 TO 7); -- TEM QUE SEPARAR PELOS BITS MAIS SIGNIFICATIVOS  ATÉ OS MENOS DE 32 EM 32  BITS, NO CASO A ENTRADA DE 256
     BEGIN
@@ -79,12 +80,13 @@ ARCHITECTURE cripto_module OF cripto_module IS
     --máquina de estados -------------------
     PROCESS (reset, clock)
     BEGIN
+
         IF reset = '1' THEN
             EA <= IDLE;
             N1 <= (OTHERS => '0'); -- ZEREI O VETOR TODO DO N1
             N2 <= (OTHERS => '0');
             NI <= (OTHERS => '0');
-            key <= (OTHERS=>(OTHERS => '0'));
+            key <= (OTHERS =>(OTHERS => '0'));
             CM1 <= (OTHERS => '0');
             R <= (OTHERS => '0');
             done_sig <= '0';
@@ -110,7 +112,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 busy <= '1';
                 N2 <= data_i(31 DOWNTO 0);
                 N1 <= data_i(63 DOWNTO 32);
-                key <= ( key_i(255 DOWNTO 224), key_i(223 DOWNTO 192), key_i(191 DOWNTO 160), key_i(159 DOWNTO 128),  key_i(127 DOWNTO 96),  key_i(95 DOWNTO 64), key_i(63 DOWNTO 32), key_i(31 DOWNTO 0);
+                key <= (key_i(255 DOWNTO 224), key_i(223 DOWNTO 192), key_i(191 DOWNTO 160), key_i(159 DOWNTO 128), key_i(127 DOWNTO 96), key_i(95 DOWNTO 64), key_i(63 DOWNTO 32), key_i(31 DOWNTO 0));
                 done_sig <= '1'; -- para saber que tem que passar pro estado 3
             ELSIF EA = E3 THEN
                 k <= 0; -- inicializer o cont em 0
@@ -164,7 +166,14 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 busy <= '1';
                 N2 <= data_i(31 DOWNTO 0);
                 N1 <= data_i(63 DOWNTO 32);
-                key <= ( key_i(255 DOWNTO 224), key_i(223 DOWNTO 192), key_i(191 DOWNTO 160), key_i(159 DOWNTO 128),  key_i(127 DOWNTO 96),  key_i(95 DOWNTO 64), key_i(63 DOWNTO 32), key_i(31 DOWNTO 0);
+                key[0] <= key_i(255 DOWNTO 224);
+                key[1] <= key_i(223 DOWNTO 192);
+                key[2] <= key_i(191 DOWNTO 160);
+                key[3] <= key_i(159 DOWNTO 128);
+                key[4] <= key_i(127 DOWNTO 96);
+                key[5] <= key_i(95 DOWNTO 64);
+                key[6] <= key_i(63 DOWNTO 32);
+                key[7] <= key_i(31 DOWNTO 0);
 
                 done_sig_11 <= '1';
             ELSIF EA = E13 THEN
