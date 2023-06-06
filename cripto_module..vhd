@@ -62,7 +62,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
     SIGNAL SN : STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL NI : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL mask : STD_LOGIC_VECTOR(31 DOWNTO 0);
-    TYPE matriz IS ARRRAY(NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
+    TYPE matriz IS ARRAY(NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL s_box : matriz (0 TO 15, 7 DOWNTO 0);
     s_box <= ((4, 10, 9, 2, 13, 8, 0, 14, 6, 11, 1, 12, 7, 15, 5, 3),
         (14, 11, 4, 12, 6, 13, 15, 10, 2, 3, 8, 1, 0, 7, 5, 9),
@@ -72,7 +72,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
         (4, 11, 10, 0, 7, 2, 1, 13, 3, 6, 8, 5, 9, 12, 15, 14),
         (13, 11, 4, 1, 3, 15, 5, 9, 0, 10, 14, 7, 6, 8, 2, 12),
         (1, 15, 13, 0, 5, 7, 10, 4, 9, 2, 3, 14, 6, 11, 8, 12));
-    TYPE VETOR IS ARRRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR(32 DOWNTO 0);
+    TYPE VETOR IS ARRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR(32 DOWNTO 0);
     SIGNAL KEY : VETOR (0 TO 7); -- TEM QUE SEPARAR PELOS BITS MAIS SIGNIFICATIVOS  ATÉ OS MENOS DE 32 EM 32  BITS, NO CASO A ENTRADA DE 256
    
     --máquina de estados -------------------
