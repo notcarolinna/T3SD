@@ -166,14 +166,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 busy <= '1';
                 N2 <= data_i(31 DOWNTO 0);
                 N1 <= data_i(63 DOWNTO 32);
-                key[0] <= key_i(255 DOWNTO 224);
-                key[1] <= key_i(223 DOWNTO 192);
-                key[2] <= key_i(191 DOWNTO 160);
-                key[3] <= key_i(159 DOWNTO 128);
-                key[4] <= key_i(127 DOWNTO 96);
-                key[5] <= key_i(95 DOWNTO 64);
-                key[6] <= key_i(63 DOWNTO 32);
-                key[7] <= key_i(31 DOWNTO 0);
+                key <= (key_i(255 DOWNTO 224), key_i(223 DOWNTO 192), key_i(191 DOWNTO 160), key_i(159 DOWNTO 128), key_i(127 DOWNTO 96), key_i(95 DOWNTO 64), key_i(63 DOWNTO 32), key_i(31 DOWNTO 0));
 
                 done_sig_11 <= '1';
             ELSIF EA = E13 THEN
