@@ -74,16 +74,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
         (1, 15, 13, 0, 5, 7, 10, 4, 9, 2, 3, 14, 6, 11, 8, 12));
     TYPE VETOR IS ARRRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR(32 DOWNTO 0);
     SIGNAL KEY : VETOR (0 TO 7); -- TEM QUE SEPARAR PELOS BITS MAIS SIGNIFICATIVOS  ATÉ OS MENOS DE 32 EM 32  BITS, NO CASO A ENTRADA DE 256
-    -- clock -------------------------------
-    PROCESS (clock, reset)
-    BEGIN
-        IF (reset = '1') THEN
-            ---- OQ TEM Q FAZER AQUI
-        ELSIF rising_edge(clock) THEN
-            -- OQ TEM QUE FAZER AQUI
-        END IF;
-    END PROCESS;
-
+   
     --máquina de estados -------------------
     PROCESS (reset, clock)
     BEGIN
