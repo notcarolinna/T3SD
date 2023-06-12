@@ -97,7 +97,6 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 I <= 0;
                 J<= 0;
                 
-
             ELSIF EA = E2 THEN
                 N1 <= data_i(31 DOWNTO 0);
                 N2 <= data_i(63 DOWNTO 32);
@@ -115,22 +114,14 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 J <= 0;
 
             ELSIF EA = E6 THEN
-                --Ni <= s_box(j,to_integer(unsigned((shift_right(unsigned(CM1),(4 * (7 - j))) MOD 16))));
-                --mask <= (OTHERS => '0') OR Ni;
-                --mask <= std_logic_vector(shift_left(unsigned(x"00000000" OR (x"000000" & (s_box(j,to_integer(unsigned((shift_right(unsigned(CM1),(4 * (7 - j))) MOD 16))))))),(28 - (4 * j)))(mask'range)); 
                 SN <= SN OR (std_logic_vector(shift_left(unsigned(x"00000000" OR (x"000000" & (s_box(j,to_integer(unsigned((shift_right(unsigned(CM1),(4 * (7 - j))) MOD 16))))))),(28 - (4 * j)))(SN'range)));
 
             ELSIF EA = E7 THEN
                 J <= J + 1;
 
             ELSIF EA = E8 THEN
-                --R <= SN;
                 N2 <= N1;
-                --N1 <= ((SN SRL 21) OR (SN SLL 11)) XOR N2;
                 N1 <= ( std_logic_vector(shift_right(unsigned(SN), 21)(N1'range)) OR std_logic_vector(shift_left(unsigned(SN), 11)(N1'range)) ) XOR N2;
-
-
-
 
             ELSIF EA = E9 THEN
                 IF for_num = '0' THEN
@@ -179,18 +170,12 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 J <= 0;
 
             ELSIF EA = E16 THEN
-               --Ni <= (CM1 SRL (4 * (7 - j))) MOD 16; -- srl = shift rigth logic
-                --Ni <= s_box(j,to_integer(unsigned((shift_right(unsigned(CM1),(4 * (7 - j))) MOD 16))));
-                --mask <= (OTHERS => '0');
-                --mask <= (OTHERS => '0') OR Ni;
-                --mask <= std_logic_vector(shift_left(unsigned(x"00000000" OR (x"000000" & (s_box(j,to_integer(unsigned((shift_right(unsigned(CM1),(4 * (7 - j))) MOD 16))))))),(28 - (4 * j)))(mask'range)); 
                 SN <= SN OR (std_logic_vector(shift_left(unsigned(x"00000000" OR (x"000000" & (s_box(j,to_integer(unsigned((shift_right(unsigned(CM1),(4 * (7 - j))) MOD 16))))))),(28 - (4 * j)))(SN'range)));
 
             ELSIF EA = E17 THEN
                 J <= J + 1;
 
             ELSIF EA = E18 THEN
-                --R <= SN;
                 N2 <= N1;
                 N1 <= ( std_logic_vector(shift_right(unsigned(SN), 21)(N1'range)) OR std_logic_vector(shift_left(unsigned(SN), 11)(N1'range)) ) XOR N2;
 
@@ -250,7 +235,6 @@ ARCHITECTURE cripto_module OF cripto_module IS
                     ELSE
                     EF <= E5;
                     END IF;
-
 
             WHEN E5 => --INICIAÇAO DO FOR DO GOST ROUND ENC
                     EF <= E6;
