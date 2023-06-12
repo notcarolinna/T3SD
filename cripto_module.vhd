@@ -39,6 +39,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
     SIGNAL for_num_1 : STD_LOGIC := '0'; --- quando for 0 é o primeiro e qnd for ''1' é o segundo o acabou
     SIGNAL done_sig_1 : STD_LOGIC := '0'; --- quando for 1 o acabou
     SIGNAL done_sig_2 : STD_LOGIC := '0'; --- quando for 1 o acabou
+    SIGNAL done_sig_3 : STD_LOGIC := '0'; --- quando for 1 o acabou
     SIGNAL K : INTEGER RANGE 0 TO 2; -- VAI DE 0 A 2
     SIGNAL I : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
     SIGNAL J : INTEGER RANGE 0 TO 7; -- VAI DE 0 A 7
@@ -81,6 +82,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
             CM1 <= (OTHERS => '0');
             done_sig_1 <= '0';
             done_sig_2 <= '0'; 
+            done_sig_3 <= '0'; 
             CONT <= 0;
             --for_num <= '0';
            -- for_num_1 <= '0';                      
@@ -186,6 +188,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
                         I <= I + 1;
                     END IF;
                 ELSIF for_num_1 = '1' THEN
+                done_sig_3 <= '1';
                     IF CONT /= 0 THEN 
                         IF I > 0 THEN
                         I <= I - 1;
@@ -296,10 +299,10 @@ ARCHITECTURE cripto_module OF cripto_module IS
                     EF <= E19;
 
             WHEN E19 => -- INCREMENTA/DECREMETNA CONTADORES DOS FORS DO DEC
-                IF I = 7 AND K = 0 THEN
+                IF I = 7 AND K = 0 and done_sig_3 = '0' THEN
                     for_num_1 <= '1';
                     EF <= E20;
-                ELSIF done_sig_2 = '1' THEN
+                ELSIF done_sig_2 = '1' or done_sig_3 = '1' THEN
                     EF <= E21;
                 ELSE
                     EF <= E14;
