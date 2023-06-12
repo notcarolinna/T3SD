@@ -36,6 +36,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
     SIGNAL EA : state; -- Estado atual
     SIGNAL EF : state; -- Estado futuro 
     SIGNAL for_num : STD_LOGIC := '0'; --- quando for 0 é o primeiro e qnd for ''1' é o segundo o acabou
+    SIGNAL for_num_1 : STD_LOGIC := '0'; --- quando for 0 é o primeiro e qnd for ''1' é o segundo o acabou
     SIGNAL done_sig_1 : STD_LOGIC := '0'; --- quando for 1 o acabou
     SIGNAL done_sig_2 : STD_LOGIC := '0'; --- quando for 1 o acabou
     SIGNAL K : INTEGER RANGE 0 TO 2; -- VAI DE 0 A 2
@@ -81,11 +82,11 @@ ARCHITECTURE cripto_module OF cripto_module IS
             done_sig_1 <= '0';
             done_sig_2 <= '0'; 
             CONT <= 0;
+        
             
         ELSIF rising_edge(clock) THEN
             EA <= EF;
             IF EA = IDLE THEN
-                data_o <= (others=>'0');
                 CONT <= 0;
                 N1 <= (OTHERS => '0'); -- ZEREI O VETOR TODO DO N1
                 N2 <= (OTHERS => '0');
@@ -95,9 +96,9 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 K <= 0;
                 I <= 0;
                 J<= 0;
+                
 
             ELSIF EA = E2 THEN
-                --busy <= '1';
                 N1 <= data_i(31 DOWNTO 0);
                 N2 <= data_i(63 DOWNTO 32);
                 key <= (key_i(255 DOWNTO 224), key_i(223 DOWNTO 192), key_i(191 DOWNTO 160), key_i(159 DOWNTO 128), key_i(127 DOWNTO 96), key_i(95 DOWNTO 64), key_i(63 DOWNTO 32), key_i(31 DOWNTO 0));
@@ -161,7 +162,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 data_o(63 DOWNTO 32) <= N1;
 
             ELSIF EA = E12 THEN
-                --busy <= '1';
+                data_o <= (others=>'0');
                 N2 <= data_i(31 DOWNTO 0);
                 N1 <= data_i(63 DOWNTO 32);
                 key <= (key_i(255 DOWNTO 224), key_i(223 DOWNTO 192), key_i(191 DOWNTO 160), key_i(159 DOWNTO 128), key_i(127 DOWNTO 96), key_i(95 DOWNTO 64), key_i(63 DOWNTO 32), key_i(31 DOWNTO 0));
@@ -194,11 +195,11 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 N1 <= ( std_logic_vector(shift_right(unsigned(SN), 21)(N1'range)) OR std_logic_vector(shift_left(unsigned(SN), 11)(N1'range)) ) XOR N2;
 
             ELSIF EA = E19 THEN
-                IF for_num = '0' THEN
+                IF for_num_1 = '0' THEN
                     IF I < 7 THEN
                         I <= I + 1;
                     END IF;
-                ELSIF for_num = '1' THEN
+                ELSIF for_num_1 = '1' THEN
                     IF CONT /= O THEN 
                         IF I > 0 THEN
                         I <= I - 1;
@@ -311,7 +312,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
 
             WHEN E19 => -- INCREMENTA/DECREMETNA CONTADORES DOS FORS DO DEC
                 IF I = 7 THEN
-                    for_num <= '1';
+                    for_num_1 <= '1';
                     EF <= E20;
                 ELSIF done_sig_2 = '1' THEN
                     EF <= E21;
