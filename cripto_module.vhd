@@ -310,9 +310,6 @@ ARCHITECTURE cripto_module OF cripto_module IS
             WHEN E21 => -- ULTIMA PARTE DA DEC
                     ready <= '1';
                     EF <= IDLE;
-
-            
-
         END CASE;
     END PROCESS;
 
