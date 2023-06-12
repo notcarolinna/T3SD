@@ -296,7 +296,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
                     EF <= E19;
 
             WHEN E19 => -- INCREMENTA/DECREMETNA CONTADORES DOS FORS DO DEC
-                IF I = 7 THEN
+                IF I = 7 AND K = 0 THEN
                     for_num_1 <= '1';
                     EF <= E20;
                 ELSIF done_sig_2 = '1' THEN
