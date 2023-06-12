@@ -178,7 +178,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
 
             ELSIF EA = E16 THEN
                --Ni <= (CM1 SRL (4 * (7 - j))) MOD 16; -- srl = shift rigth logic
-                Ni <= s_box(j,to_integer(unsigned((shift_right(unsigned(CM1),(4 * (7 - j))) MOD 16))));
+                --Ni <= s_box(j,to_integer(unsigned((shift_right(unsigned(CM1),(4 * (7 - j))) MOD 16))));
                 --mask <= (OTHERS => '0');
                 --mask <= (OTHERS => '0') OR Ni;
                 --mask <= std_logic_vector(shift_left(unsigned(x"00000000" OR (x"000000" & (s_box(j,to_integer(unsigned((shift_right(unsigned(CM1),(4 * (7 - j))) MOD 16))))))),(28 - (4 * j)))(mask'range)); 
