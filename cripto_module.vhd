@@ -193,7 +193,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
                         K <= K + 1;
                         I <= 7;
                         --- CONT <= 0;
-                        ELSE ------------------------------ SE NENHUM DOS DOIS ACIMA ACONTECER  QUER DIZER QUE TUDO JÁ ACABOU
+                        ELSIF I = 0 AND K = 2 THEN ------------------------------ SE NENHUM DOS DOIS ACIMA ACONTECER  QUER DIZER QUE TUDO JÁ ACABOU
                         done_sig_2 <= '1';
                         END IF;
                     END IF;
