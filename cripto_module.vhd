@@ -198,12 +198,19 @@ ARCHITECTURE cripto_module OF cripto_module IS
                         I <= I + 1;
                     END IF;
                 ELSIF for_num = '1' THEN
-                    IF I > 0 THEN
+                    IF CONT /= O THEN 
+                        IF I > 0 THEN
                         I <= I - 1;
-                    ELSIF I = 0 AND K < 3 THEN
+                        ELSIF I = 0 AND K < 3 THEN
                         K <= K + 1;
-                    ELSE ------------------------------ SE NENHUM DOS DOIS ACIMA ACONTECER  QUER DIZER QUE TUDO JÁ ACABOU
+                        I <= 7;
+                        --- CONT <= 0;
+                        ELSE ------------------------------ SE NENHUM DOS DOIS ACIMA ACONTECER  QUER DIZER QUE TUDO JÁ ACABOU
                         done_sig_2 <= '1';
+                        END IF;
+                    END IF;
+                    IF I = 7 THEN
+                        CONT <= CONT + 1;
                     END IF;
                 END IF;
                 
