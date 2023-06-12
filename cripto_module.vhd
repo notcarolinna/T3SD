@@ -185,7 +185,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
                         I <= I + 1;
                     END IF;
                 ELSIF for_num_1 = '1' THEN
-                    IF CONT /= O THEN 
+                    IF CONT /= 0 THEN 
                         IF I > 0 THEN
                         I <= I - 1;
                         ELSIF I = 0 AND K < 3 THEN
