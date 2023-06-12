@@ -17,6 +17,7 @@ add wave -noupdate -radix hexadecimal /tb/cripto/for_num
 add wave -noupdate -radix hexadecimal /tb/cripto/for_num_1
 add wave -noupdate -radix hexadecimal /tb/cripto/done_sig_1
 add wave -noupdate -radix hexadecimal /tb/cripto/done_sig_2
+add wave -noupdate -radix hexadecimal /tb/cripto/done_sig_3
 add wave -noupdate -radix hexadecimal /tb/cripto/K
 add wave -noupdate -radix hexadecimal /tb/cripto/I
 add wave -noupdate -radix hexadecimal /tb/cripto/J
