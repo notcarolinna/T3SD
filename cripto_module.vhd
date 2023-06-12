@@ -82,8 +82,9 @@ ARCHITECTURE cripto_module OF cripto_module IS
             done_sig_1 <= '0';
             done_sig_2 <= '0'; 
             CONT <= 0;
+            for_num < = '0';
+            for_num_1 < = '0';                      
         
-            
         ELSIF rising_edge(clock) THEN
             EA <= EF;
             IF EA = IDLE THEN
