@@ -85,6 +85,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
         ELSIF rising_edge(clock) THEN
             EA <= EF;
             IF EA = IDLE THEN
+                data_o <= (others=>'0');
                 CONT <= 0;
                 N1 <= (OTHERS => '0'); -- ZEREI O VETOR TODO DO N1
                 N2 <= (OTHERS => '0');
