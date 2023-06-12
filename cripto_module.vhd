@@ -302,7 +302,7 @@ ARCHITECTURE cripto_module OF cripto_module IS
                 IF I = 7 AND K = 0 and done_sig_3 = '0' THEN
                     for_num_1 <= '1';
                     EF <= E20;
-                ELSIF done_sig_2 = '1' or done_sig_3 = '1' THEN
+                ELSIF done_sig_2 = '1' THEN
                     EF <= E21;
                 ELSE
                     EF <= E14;
