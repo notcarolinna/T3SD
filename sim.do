@@ -12,4 +12,4 @@ set StdVitalGlitchNoWarnings 1
 
 do wave.do 
 
-run 8000 us
+run 5000 us
