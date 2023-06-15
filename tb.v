@@ -29,13 +29,7 @@ module tb;
     start  = 1'b1;
     #10;
     start  = 1'b0;
-    #5000;
-    enc_dec  = 1'b0;
-    data_i = 64'h272612A5EE5D03AD;
-    start  = 1'b1;
-    #10;
-    start  = 1'b0;
-    #1000;
+    
   end
 
   cripto_module cripto(.clock(clock), .reset(reset), .start(start), .enc_dec(enc_dec), .data_i(data_i), .key_i(key_i), .data_o(data_o), .busy(busy), .ready(ready));
